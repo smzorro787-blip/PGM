@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const tipo = typeLabels[type] ?? type
 
     const { error } = await resend.emails.send({
-      from: "PGM Web <onboarding@resend.dev>",
+      from: process.env.CONTACT_FROM_EMAIL ?? "PGM Web <onboarding@resend.dev>",
       to: "pequesgrandesmentes@gmail.com",
       replyTo: email,
       subject: `Nuevo mensaje de ${name} — ${tipo}`,
