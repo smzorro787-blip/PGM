@@ -15,12 +15,24 @@ export function ContactSection() {
     type: "voluntario",
     message: "",
   })
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log(formData)
-    alert("¡Gracias por tu interés! Nos pondremos en contacto contigo pronto. 💚")
+    setStatus("loading")
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+      if (!res.ok) throw new Error("Request failed")
+      setStatus("success")
+      setFormData({ name: "", email: "", phone: "", type: "voluntario", message: "" })
+    } catch (err) {
+      console.log("[v0] Error sending form:", err)
+      setStatus("error")
+    }
   }
 
   return (
@@ -273,11 +285,23 @@ export function ContactSection() {
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center gap-2 bg-sage-green text-white py-4 px-6 rounded-xl font-medium text-lg hover:bg-sage-green/90 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
+                  disabled={status === "loading"}
+                  className="w-full flex items-center justify-center gap-2 bg-sage-green text-white py-4 px-6 rounded-xl font-medium text-lg hover:bg-sage-green/90 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <Send className="w-5 h-5" />
-                  Enviar mensaje 🚀
+                  {status === "loading" ? "Enviando..." : "Enviar mensaje 🚀"}
                 </button>
+
+                {status === "success" && (
+                  <p className="text-center text-sage-green font-medium">
+                    ¡Gracias por tu interés! Hemos recibido tu mensaje y nos pondremos en contacto contigo pronto. 💚
+                  </p>
+                )}
+                {status === "error" && (
+                  <p className="text-center text-red-600 font-medium">
+                    Hubo un problema al enviar tu mensaje. Inténtalo de nuevo o escríbenos por WhatsApp.
+                  </p>
+                )}
               </div>
             </form>
           </motion.div>
